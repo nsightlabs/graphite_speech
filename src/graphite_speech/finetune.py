@@ -43,6 +43,9 @@ from transformers.models.granite_speech import (
     GraniteSpeechProcessor,
 )
 
+local_rank = int(os.environ.get("LOCAL_RANK", 0))
+device = f"cuda:{local_rank}"
+
 
 # --------------------------------------------------------------------------- #
 # Argument parsing
@@ -79,10 +82,6 @@ def parse_args():
     model_grp.add_argument(
         "--model_name", type=str, default="ibm-granite/granite-4.0-1b-speech",
         help="Model repo id or local path.",
-    )
-    model_grp.add_argument(
-        "--cuda_visible_devices", type=str, default="0",
-        help="Value for CUDA_VISIBLE_DEVICES.",
     )
     model_grp.add_argument(
         "--full_finetune", action="store_true",
@@ -269,11 +268,11 @@ def compute_wer(model, processor, cur_dataset, batch_size, num_workers, num_beam
     dataloader = DataLoader(cur_dataset, batch_size=batch_size, collate_fn=collator, num_workers=num_workers)
     normalizer = EnglishTextNormalizer()
     wer_metric = evaluate.load("wer")
-    model = model.eval().cuda()
+    model = model.eval().to(device)
 
     all_outputs = []
     for batch in tqdm.tqdm(dataloader, desc="Running inference"):
-        batch = batch.to("cuda")
+        batch = batch.to(device)
         with torch.inference_mode(), torch.amp.autocast("cuda", dtype=torch.bfloat16):
             outputs = model.generate(
                 **batch, max_new_tokens=max_new_tokens, num_beams=num_beams, early_stopping=True
@@ -345,19 +344,21 @@ def build_trainer(args, model, processor, train_dataset, val_dataset):
 # --------------------------------------------------------------------------- #
 def main():
     args = parse_args()
-
-    os.environ["CUDA_VISIBLE_DEVICES"] = args.cuda_visible_devices
-
+    
+    if local_rank == 0:
+        for k,v in vars(args).items():
+            print(f"{k}: {v}")
+            
     login_hf(args)
 
-    print(f"Loading model and processor: {args.model_name}")
+    print(f"[rank {local_rank}] Loading model and processor: {args.model_name}")
     model, processor = load_model_and_processor(args)
 
-    print("Loading and preparing dataset...")
+    print(f"[rank {local_rank}] Loading and preparing dataset...")
     train_dataset, val_dataset, test_dataset = load_and_prepare_data(args, processor)
 
     wer_before_train = None
-    if not args.skip_wer_before:
+    if not args.skip_wer_before and local_rank == 0:
         print("Computing WER before finetuning...")
         wer_before_train = compute_wer(
             model, processor, test_dataset,
@@ -378,7 +379,7 @@ def main():
 
         torch.cuda.empty_cache()
 
-    if not args.skip_wer_after:
+    if not args.skip_wer_after and local_rank == 0:
         print("Computing WER after finetuning...")
         wer_after_train = compute_wer(
             model, processor, test_dataset,
