@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "graphite_speech"
+version = "0.1.0"
+description = "My awesome package"
+authors = [
+    {name = "Ochwo Laban"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+
+dependencies = [
+    "git+https://github.com/huggingface/transformers.git",
+    "datasets",
+    "peft",
+    "accelerate",
+    "evaluate",
+    "tqdm",
+    "openai-whisper",
+    "jiwer",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
