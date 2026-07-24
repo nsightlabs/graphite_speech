@@ -368,6 +368,7 @@ def main():
             max_new_tokens=args.max_new_tokens,
         )
         print(f"WER before finetuning: {wer_before_train:.3f}")
+        torch.cuda.empty_cache()
 
     if not args.skip_training:
         print("Setting trainable parameters...")
@@ -391,6 +392,7 @@ def main():
         print(f"WER after finetuning: {wer_after_train:.3f}")
         if wer_before_train is not None:
             print(f"WER improvement: {(wer_before_train - wer_after_train):.3f}")
+        torch.cuda.empty_cache()
 
 
 if __name__ == "__main__":
