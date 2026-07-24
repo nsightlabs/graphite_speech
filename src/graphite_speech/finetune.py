@@ -115,6 +115,7 @@ def parse_args():
     train_grp.add_argument("--logging_steps", type=int, default=100)
     train_grp.add_argument("--eval_steps", type=int, default=100)
     train_grp.add_argument("--save_steps", type=int, default=100)
+    train_grp.add_argument("--save_total_limit", type=int, default=2)
     train_grp.add_argument("--learning_rate", type=float, default=3e-5)
     train_grp.add_argument("--dataloader_num_workers", type=int, default=4)
     train_grp.add_argument("--data_seed", type=int, default=42)
@@ -320,6 +321,7 @@ def build_trainer(args, model, processor, train_dataset, val_dataset):
         per_device_train_batch_size=args.per_device_train_batch_size,
         per_device_eval_batch_size=args.per_device_eval_batch_size,
         gradient_accumulation_steps=args.gradient_accumulation_steps,
+        save_total_limit=args.save_total_limit,
         num_train_epochs=args.num_train_epochs,
         max_steps=args.max_steps,
         warmup_steps=args.warmup_steps,
