@@ -29,12 +29,12 @@ authentication. If running on Kaggle with a stored secret, pass --use_kaggle_sec
 
 import argparse
 import os
-
+import json
 import torch
 import tqdm
 import evaluate
 from torch.utils.data import DataLoader
-from datasets import load_dataset, Audio
+from datasets import Dataset, Audio
 from whisper.normalizers import EnglishTextNormalizer
 from transformers import TrainingArguments, Trainer
 from transformers.feature_extraction_utils import BatchFeature
@@ -191,8 +191,16 @@ def prepare_dataset(ds, processor, instruction, num_workers):
     ds = ds.filter(lambda x: x["text"] not in ["<other>", "<noise>", "<music>", "<sil>"])
     return ds
 
+def load_dataset(data_path):
+    with open(data_path, "r") as f:
+        data = [json.loads(line) for line in f]
+    ds_items = [{"text": item["sentence"], "audio": item["path"]} for item in data]
+    return Dataset.from_list(ds_items)
 
 def load_and_prepare_data(args, processor):
+    train_dataset = load_dataset(args.train_manifest)
+    val_dataset = load_dataset(args.val_manifest)
+    test_dataset = load_dataset(args.test_manifest)
 
     train_dataset = prepare_dataset(
         train_dataset, processor, args.instruction, args.preprocessing_num_workers
