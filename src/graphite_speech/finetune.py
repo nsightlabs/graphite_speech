@@ -120,8 +120,6 @@ def parse_args():
     train_grp.add_argument("--data_seed", type=int, default=42)
     train_grp.add_argument("--bf16", action="store_true", default=True)
     train_grp.add_argument("--no_bf16", dest="bf16", action="store_false")
-    train_grp.add_argument("--gradient_checkpointing", action="store_true", default=True)
-    train_grp.add_argument("--no_gradient_checkpointing", dest="gradient_checkpointing", action="store_false")
 
     # --- Evaluation / WER ----------------------------------------------------#
     eval_grp = parser.add_argument_group("Evaluation")
@@ -322,7 +320,6 @@ def build_trainer(args, model, processor, train_dataset, val_dataset):
         per_device_train_batch_size=args.per_device_train_batch_size,
         per_device_eval_batch_size=args.per_device_eval_batch_size,
         gradient_accumulation_steps=args.gradient_accumulation_steps,
-        gradient_checkpointing=args.gradient_checkpointing,
         num_train_epochs=args.num_train_epochs,
         max_steps=args.max_steps,
         warmup_steps=args.warmup_steps,
