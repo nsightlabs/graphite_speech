@@ -21,6 +21,7 @@ dependencies = [
     "tqdm",
     "openai-whisper",
     "jiwer",
+    "torchao"
 ]
 
 [tool.setuptools.packages.find]
