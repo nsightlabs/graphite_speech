@@ -35,7 +35,7 @@ import tqdm
 import evaluate
 from torch.utils.data import DataLoader
 from datasets import Dataset, Audio
-from whisper.normalizers import EnglishTextNormalizer
+from whisper.normalizers import BasicTextNormalizer
 from transformers import TrainingArguments, Trainer
 from transformers.feature_extraction_utils import BatchFeature
 from transformers.models.granite_speech import (
@@ -267,7 +267,7 @@ class GraniteCollator:
 def compute_wer(model, processor, cur_dataset, batch_size, num_workers, num_beams, max_new_tokens):
     collator = GraniteCollator(processor, inference_mode=True)
     dataloader = DataLoader(cur_dataset, batch_size=batch_size, collate_fn=collator, num_workers=num_workers)
-    normalizer = EnglishTextNormalizer()
+    normalizer = BasicTextNormalizer()
     wer_metric = evaluate.load("wer")
     model = model.eval().to(device)
 
