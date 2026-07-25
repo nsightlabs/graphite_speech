@@ -299,14 +299,14 @@ def load_model_and_processor(args):
 
 
 def set_trainable_params(model, full_finetune):
-    from peft import LoraConfig, get_peft_model
+    # from peft import LoraConfig, get_peft_model
         
-    lora_config = LoraConfig(
-        r=16, lora_alpha=32, lora_dropout=0.05,
-        target_modules=["q_proj", "k_proj", "v_proj", "o_proj"],  # check actual module names for the LLM decoder
-        task_type="CAUSAL_LM",
-    )
-    model.language_model = get_peft_model(model.language_model, lora_config)
+    # lora_config = LoraConfig(
+    #     r=16, lora_alpha=32, lora_dropout=0.05,
+    #     target_modules=["q_proj", "k_proj", "v_proj", "o_proj"],  # check actual module names for the LLM decoder
+    #     task_type="CAUSAL_LM",
+    # )
+    # model.language_model = get_peft_model(model.language_model, lora_config)
     
     for n, p in model.named_parameters():
         if full_finetune:
